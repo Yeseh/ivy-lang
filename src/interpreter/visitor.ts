@@ -1,6 +1,5 @@
 import { AstNode } from '../parser/ast-nodes'
 
-
 export class Visitor {
     constructor() {
         this.visit = this.visit.bind(this);

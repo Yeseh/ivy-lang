@@ -1,6 +1,12 @@
 import { Token } from '../token';
 
-export abstract class AstNode {}
+export abstract class AstNode {
+    token: Token;
+
+    constructor(token: Token) {
+        this.token = token;
+    }
+}
 
 export const binaryOperator = (
     left: AstNode, 
@@ -9,30 +15,41 @@ export const binaryOperator = (
 ) => new BinaryOperator(left, op, right,)
 
 export const num = (token: Token): Num => new Num(token)
+export const unaryOperator = (token: Token, expr: AstNode): UnaryOperator => new UnaryOperator(token, expr);
 
 export class BinaryOperator extends AstNode {
    left: AstNode;
    op: Token;
    right: AstNode;
-   token: Token;
 
     constructor(left: AstNode, op: Token, right: AstNode) {
-        super();
+        super(op);
 
         this.left = left;
-        this.token = this.op = op;
+        this.op = op;
         this.right = right;
     }
 }
 
 export class Num extends AstNode {
-    token: Token;
     value: any;
 
     constructor(token: Token) {
-        super();
+        super(token);
         
-        this.token = token;
         this.value = token.value;
+    }
+}
+
+export class UnaryOperator extends AstNode {
+    token: Token;
+    op: Token;
+    expr: AstNode;
+
+    constructor(token: Token, expr: AstNode) {
+        super(token)
+
+        this.expr = expr;
+        this.op = token;
     }
 }

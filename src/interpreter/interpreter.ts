@@ -1,6 +1,6 @@
 import { Visitor } from './visitor';
 import { Parser } from '../parser/parser';
-import { BinaryOperator, Num } from '../parser/ast-nodes';
+import { BinaryOperator, Num, UnaryOperator } from '../parser/ast-nodes';
 import { TT } from '../token';
 
 export class Interpreter extends Visitor {
@@ -10,18 +10,18 @@ export class Interpreter extends Visitor {
         super()
 
         this.parser = parser;
-
-        this.run = this.run.bind(this);
-        this.visitBinaryOperator = this.visitBinaryOperator.bind(this);
-        this.visitNum = this.visitNum.bind(this);
     }
 
-    run() {
+    run = () => {
         const tree = this.parser.parse();
         return this.visit(tree);
     }
 
-    visitBinaryOperator(node: BinaryOperator) {
+    visitNum = (node: Num) => {
+        return node.value;
+    }
+
+    visitBinaryOperator = (node: BinaryOperator) => {
         switch (node.op.type) {
             case TT.PLUS:
                 return this.visit(node.left) + this.visit(node.right);
@@ -33,8 +33,13 @@ export class Interpreter extends Visitor {
                 return this.visit(node.left) * this.visit(node.right);
         }
     }
-    
-    visitNum(node: Num) {
-        return node.value;
+
+    visitUnaryOperator = (node: UnaryOperator) => {
+        switch(node.op.type) {
+            case TT.PLUS:
+                return +this.visit(node.expr)
+            case TT.MINUS:
+                return -this.visit(node.expr)
+        }
     }
 }

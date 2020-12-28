@@ -1,6 +1,6 @@
 import { Lexer } from '../lexer';
 import { Token, TT} from '../token';
-import { AstNode, binaryOperator, num } from './ast-nodes'
+import { AstNode, binaryOperator, num, unaryOperator} from './ast-nodes'
 
 const {INT, LPAREN, PLUS, MINUS, DIV, MUL, RPAREN} = TT; 
 
@@ -29,12 +29,20 @@ export class Parser {
         }
     }
     /**
-     * factor: INTEGER | LPAREN expr RPAREN
+     * factor: (PLUS|MINUS) factor | INTEGER | LPAREN expr RPAREN
      */
     factor(): AstNode {
         const token = this.currentToken;
 
-        if (token.type === INT) {
+        if (token.type === PLUS) {
+            this.eat(PLUS);
+            return unaryOperator(token, this.factor());
+        }
+        if (token.type === MINUS) {
+            this.eat(MINUS);
+            return unaryOperator(token, this.factor());
+        }
+        else if (token.type === INT) {
             this.eat(INT);
             return num(token); 
         }
@@ -55,16 +63,11 @@ export class Parser {
 
         while (ops.includes(this.currentToken.type)) {
             const token = this.currentToken;
-
-            switch (this.currentToken.type) {
-                case MUL:
-                    this.eat(MUL);
-                    break;
-                case DIV:
-                    this.eat(DIV);
-                    break;
-            }
-
+            
+            this.currentToken.type === TT.MUL 
+                ? this.eat(MUL)
+                : this.eat(DIV)
+            
             node = binaryOperator(node, token, this.factor())
         }
 
@@ -84,15 +87,10 @@ export class Parser {
 
         while (ops.includes(this.currentToken.type)) {
             const token = this.currentToken;
-
-            switch (this.currentToken.type) {
-                case PLUS:
-                    this.eat(PLUS)
-                    break;
-                case MINUS:
-                    this.eat(MINUS)
-                    break;
-            }
+            
+            this.currentToken.type === PLUS
+                ? this.eat(PLUS)
+                : this.eat(MINUS)
 
             node = binaryOperator(node, token, this.term())
         }

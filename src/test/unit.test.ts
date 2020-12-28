@@ -71,4 +71,20 @@ describe('Interpreter', () => {
             expect(result).toEqual([16, 125, 22, 10]);
         })
     })
+
+    it('Should correctly handle unary operators', () => {
+        const expr = [
+            '- 3',
+            '+ 3',
+            '-2 + 3',
+            '--2 + 3',
+            '-(3+2) ++-10'
+        ]
+
+        const result = expr.map(e => {
+            return run(e);
+        })
+
+        expect(result).toEqual([-3, 3, 1, 5, -15]);
+    })
 })
