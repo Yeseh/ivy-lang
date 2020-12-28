@@ -33,20 +33,12 @@ export class Interpreter {
         return parseInt(value);
     }
 
-    expr() {
-        const ops = [TT.PLUS, TT.MINUS, TT.DIV, TT.MUL];
+    term() {
+        const ops = [TT.DIV, TT.MUL];
         let result = this.factor();
 
         while (ops.includes(this.currentToken.type)) {
             switch (this.currentToken.type) {
-                case TT.PLUS:
-                    this.eat(TT.PLUS)
-                    result += this.factor();
-                    break;
-                case TT.MINUS:
-                    this.eat(TT.MINUS)
-                    result += this.factor();
-                    break;
                 case TT.MUL:
                     this.eat(TT.MUL);
                     result *= this.factor();
@@ -54,6 +46,26 @@ export class Interpreter {
                 case TT.DIV:
                     this.eat(TT.DIV);
                     result /= this.factor();
+                    break;
+            }
+        }
+
+        return result;
+    }
+
+    expr() {
+        const ops = [TT.PLUS, TT.MINUS, TT.DIV, TT.MUL];
+        let result = this.term();
+
+        while (ops.includes(this.currentToken.type)) {
+            switch (this.currentToken.type) {
+                case TT.PLUS:
+                    this.eat(TT.PLUS)
+                    result += this.term();
+                    break;
+                case TT.MINUS:
+                    this.eat(TT.MINUS)
+                    result -= this.term();
                     break;
             }
         }
