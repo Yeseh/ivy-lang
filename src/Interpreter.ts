@@ -1,5 +1,7 @@
 import { Lexer } from './Lexer';
-import { Token, TT } from './Token';
+import { Token, TT} from './Token';
+
+const {INT, LPAREN, PLUS, MINUS, DIV, MUL, RPAREN} = TT; 
 
 export class Interpreter {
     lex: Lexer;
@@ -25,26 +27,38 @@ export class Interpreter {
             this.error();
         }
     }
-
+    /**
+     * factor: INTEGER | LPAREN expr RPAREN
+     */
     factor() {
-        const value = this.currentToken.value;
-        this.eat(TT.INT)
+        const token = this.currentToken;
 
-        return parseInt(value);
+        if (token.type === INT) {
+            this.eat(INT);
+            return token.value; 
+        }
+        else if (token.type === LPAREN) {
+            this.eat(LPAREN);
+            let result = this.expr();
+            this.eat(RPAREN);
+            return result;
+        }
     }
-
+    /**
+     * term: factor ((MUL | DIV) factor) * 
+     */
     term() {
-        const ops = [TT.DIV, TT.MUL];
+        const ops = [DIV, MUL];
         let result = this.factor();
 
         while (ops.includes(this.currentToken.type)) {
             switch (this.currentToken.type) {
-                case TT.MUL:
-                    this.eat(TT.MUL);
+                case MUL:
+                    this.eat(MUL);
                     result *= this.factor();
                     break;
-                case TT.DIV:
-                    this.eat(TT.DIV);
+                case DIV:
+                    this.eat(DIV);
                     result /= this.factor();
                     break;
             }
@@ -53,18 +67,25 @@ export class Interpreter {
         return result;
     }
 
+    /**
+     * expr: term ((PLUS | MINUS) term) *
+     * 
+     * term: factor ((MUL | DIV) factor) *
+     * 
+     * factor: INTEGER
+     */
     expr() {
-        const ops = [TT.PLUS, TT.MINUS, TT.DIV, TT.MUL];
+        const ops = [PLUS, MINUS, DIV, MUL];
         let result = this.term();
 
         while (ops.includes(this.currentToken.type)) {
             switch (this.currentToken.type) {
-                case TT.PLUS:
-                    this.eat(TT.PLUS)
+                case PLUS:
+                    this.eat(PLUS)
                     result += this.term();
                     break;
-                case TT.MINUS:
-                    this.eat(TT.MINUS)
+                case MINUS:
+                    this.eat(MINUS)
                     result -= this.term();
                     break;
             }
