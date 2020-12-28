@@ -1,6 +1,10 @@
-import { lex } from './lexer';
+import { Interpreter } from './Interpreter';
+import { Lexer } from './Lexer';
 
 export const run = text => {
-	return lex(text);
+	const lex = new Lexer(text);
+	const interpreter = new Interpreter(lex);
+
+	return interpreter.expr();
 };
 

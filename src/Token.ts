@@ -12,7 +12,7 @@ export enum TT {
 
 export class Token {
     type: TT;
-    value?: string;
+    value?: any;
 
     constructor(type: TT, value: any = null) {
     	this.type = type;
