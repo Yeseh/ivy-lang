@@ -1,0 +1,56 @@
+{
+  "name": "ivy-lang",
+  "version": "0.0.1",
+  "description": "Project to learn how to develop a programming language!",
+  "main": "src/main.ts",
+  "scripts": {
+    "test": "jest --runInBand",
+    "test:watch": "jest -runInBand --watch",
+    "test:cov": "jest --coverage --forceExit --runInBand && start ./coverage/lcov-report/index.html",
+    "test:debug": "node --inspect-brk ./node_modules/jest/bin/jest.js --runInBand --forceExit",
+    "dev": "nodemon -e ts ./src/main.ts -r dotenv/config --config ./nodemon.json",
+    "start": "ts-node main.ts",
+    "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
+    "lint": "eslint \"src/**/*.ts\" --fix",
+    "prebuild": "npm run format && npm run lint && npm test",
+    "debug": "node ./dist/src/server.js --debug-brk=5858",
+    "commit": "git-cz --disable-emoji"
+  },
+  "_moduleAliases": {
+    "@root": ".",
+    "@lib": "src/lib",
+    "@helpers": "src/helpers",
+    "@typings": "src/types",
+    "@mw": "src/middleware",
+    "@modules": "src/modules"
+  },
+  "author": "Jesse Wellenberg (Yeseh; dev@jessewellenberg.nl)",
+  "license": "MIT",
+  "private": false,
+  "dependencies": {
+  },
+  "devDependencies": {
+    "@types/jest": "^26.0.0",
+    "@yeseh/eslint-config": "git+https://github.com/yeseh/eslint-config",
+    "@yeseh/prettier-config": "git+https://github.com/yeseh/prettier-config",
+    "chai": "^4.2.0",
+    "chai-datetime": "^1.6.0",
+    "commitizen": "^4.2.2",
+    "eslint": "^6.6.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-plugin-import": "^2.20.1",
+    "eslint-plugin-node": "^11.0.0",
+    "eslint-plugin-prettier": "^3.1.2",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.1",
+    "eslint-plugin-vue": "^6.2.1",
+    "git-cz": "^4.7.1",
+    "jest": "^26.0.1",
+    "prettier": "^1.19.1",
+    "prettier-eslint": "^9.0.1",
+    "prettier-eslint-cli": "^5.0.0",
+    "ts-jest": "^26.1.0",
+    "ts-node": "^8.6.2",
+    "typescript": "^4.0.5"
+  }
+}

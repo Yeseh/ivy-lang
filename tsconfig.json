@@ -1,0 +1,43 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "esModuleInterop": true,
+        "target": "es6",
+        "moduleResolution": "node",
+        "sourceMap": true,
+        "outDir": "./dist",
+        "baseUrl": "src",
+        "paths": {
+            "@helpers/*": [
+                "helpers/*"
+            ],
+            "@lib/*": [
+                "lib/*"
+            ],
+            "@mw/*": [
+                "middleware/*"
+            ],
+            "@typings/*": [
+                "types/*"
+            ],
+            "@modules/*": [
+                "modules/*"
+            ]
+        },
+        "experimentalDecorators": true,
+        "allowJs": true,
+        "downlevelIteration": true,
+    },
+    "lib": [
+        "es2015"
+    ],
+    "include": [
+        "src/**/*.ts",
+        "**/*.d.ts"
+    ],
+    "exclude": [
+        "dist/",
+        "node_modules",
+        "**/*.{test,spec}.ts",
+    ]
+}

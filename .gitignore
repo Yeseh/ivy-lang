@@ -1,0 +1,23 @@
+README.md
+npm-debug.log
+node_modules
+.DS_Store
+/client/node_modules
+/src/node_modules
+/src/testlog.json
+Test data/stockdata.qvd
+/static/docs
+/src/static
+static
+/src/dist
+/src/api/v1
+/dist
+/Test server
+/logs
+/.nyc_output
+package-lock.json
+.env
+*.vscode
+*.0x
+*.log
+coverage
