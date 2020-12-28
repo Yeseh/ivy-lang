@@ -1,10 +1,14 @@
-import { Interpreter } from './Interpreter';
-import { Lexer } from './Lexer';
+import { Parser } from './parser/parser';
+import { Lexer } from './lexer';
+import { Interpreter } from './interpreter/interpreter';
 
+/** Entry point for the Ivy interpreter */
 export const run = text => {
 	const lex = new Lexer(text);
-	const interpreter = new Interpreter(lex);
+	const parser = new Parser(lex);
 
-	return interpreter.expr();
+	const interpreter = new Interpreter(parser);
+
+	return interpreter.run();
 };
 

@@ -1,9 +1,10 @@
-import { Lexer } from './Lexer';
-import { Token, TT} from './Token';
+import { Lexer } from '../lexer';
+import { Token, TT} from '../token';
+import { AstNode, binaryOperator, num } from './ast-nodes'
 
 const {INT, LPAREN, PLUS, MINUS, DIV, MUL, RPAREN} = TT; 
 
-export class Interpreter {
+export class Parser {
     lex: Lexer;
     currentToken: Token
 
@@ -30,41 +31,44 @@ export class Interpreter {
     /**
      * factor: INTEGER | LPAREN expr RPAREN
      */
-    factor() {
+    factor(): AstNode {
         const token = this.currentToken;
 
         if (token.type === INT) {
             this.eat(INT);
-            return token.value; 
+            return num(token); 
         }
         else if (token.type === LPAREN) {
             this.eat(LPAREN);
-            let result = this.expr();
+            const node = this.expr();
             this.eat(RPAREN);
-            return result;
+            
+            return node; 
         }
     }
     /**
      * term: factor ((MUL | DIV) factor) * 
      */
-    term() {
+    term(): AstNode {
         const ops = [DIV, MUL];
-        let result = this.factor();
+        let node = this.factor();
 
         while (ops.includes(this.currentToken.type)) {
+            const token = this.currentToken;
+
             switch (this.currentToken.type) {
                 case MUL:
                     this.eat(MUL);
-                    result *= this.factor();
                     break;
                 case DIV:
                     this.eat(DIV);
-                    result /= this.factor();
                     break;
             }
+
+            node = binaryOperator(node, token, this.factor())
         }
 
-        return result;
+        return node;
     }
 
     /**
@@ -74,23 +78,29 @@ export class Interpreter {
      * 
      * factor: INTEGER
      */
-    expr() {
+    expr(): AstNode {
         const ops = [PLUS, MINUS, DIV, MUL];
-        let result = this.term();
+        let node = this.term();
 
         while (ops.includes(this.currentToken.type)) {
+            const token = this.currentToken;
+
             switch (this.currentToken.type) {
                 case PLUS:
                     this.eat(PLUS)
-                    result += this.term();
                     break;
                 case MINUS:
                     this.eat(MINUS)
-                    result -= this.term();
                     break;
             }
+
+            node = binaryOperator(node, token, this.term())
         }
 
-        return result;
+        return node;
+    }
+
+    parse() {
+        return this.expr();
     }
 }
