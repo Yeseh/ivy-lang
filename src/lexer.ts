@@ -11,30 +11,97 @@ const lexer = {
 	text: "",
 	line: 0,
 	pos: 0,
-	currentToken: null
+	currentToken: null,
+	currentChar: ""
 }
 
 const isDigit = (char: string) => DIGITS.includes(char);
+const isSpace = (char: string) => WHITESPACE.includes(char); 
 
 export const lex = (text: string) => {
 	lexer.text = text;
+	lexer.pos = 0;
+	lexer.line = 0;
+	lexer.currentChar = text[lexer.pos];
+
 	return expr();
 }
 
+const advance = () => {
+	lexer.pos++;
+
+	if (lexer.pos > lexer.text.length -1) {
+		lexer.currentChar = null;
+	}
+	else {
+		lexer.currentChar = lexer.text[lexer.pos];
+	}
+}
+
+const skipWhitespace = () => {
+	while (lexer.currentChar !== null && isSpace(lexer.currentChar)) {
+		advance();
+	}
+}
+
+const makeInteger = () => {
+	let numStr = '';
+
+	while (lexer.currentChar !== null && isDigit(lexer.currentChar)) {
+		numStr += lexer.currentChar;
+		advance();
+	}
+	
+	return parseInt(numStr);
+}
+
 const getNextToken = (): Token | IvyError => {
- 	if (lexer.pos > lexer.text.length - 1) {
-		return getToken(TT.EOF, null)
+	while (lexer.currentChar !== null) {
+		const char = lexer.currentChar;
+
+		if (isSpace(lexer.currentChar)) {
+			skipWhitespace();
+			continue;
+		}
+		
+		if (isDigit(lexer.currentChar)) {
+			return getToken(TT.INT, makeInteger());
+		}
+		
+		if (char === '+') {
+			advance();
+			return getToken(TT.PLUS)
+		}
+		
+		if (char === '-') {
+			advance();
+			return getToken(TT.MINUS)
+		}
+
+		if (char === '/') {
+			advance()
+			return getToken(TT.DIV)
+		}
+		
+		if (char === '*') {
+			advance()
+			return getToken(TT.MUL)
+		}
+		
+		if (char === '(') {
+			advance()
+			return getToken(TT.LPAREN)
+		}
+		
+		if (char === ')') {
+			advance()
+			return getToken(TT.RPAREN)
+		}
+			
+		return lexingError();	
 	}
 
-	const currentChar = lexer.text[lexer.pos];
-
-	const token = createToken(currentChar);
-
-	if (token instanceof IvyError) {
-		throw token;
-	}
-
-	return token;
+	return getToken(TT.EOF, null);
 }
 
 const lexingError = () => { 
@@ -56,57 +123,16 @@ const eat = (type: TT | TT[]) => {
 const expr = (): Number => {
 	lexer.currentToken = getNextToken();
 
-	console.log(lexer.currentToken);
-
 	const left = lexer.currentToken;
 	eat(TT.INT);
 
 	const op = lexer.currentToken;
-	eat(TT.PLUS);
+	op.type === TT.PLUS ? eat(TT.PLUS) : eat(TT.MINUS);
 
 	const right = lexer.currentToken;
 	eat(TT.INT);
 
-	return left.value + right.value;
-}
-
-const createToken = (char: string): Token | IvyError => {
-	console.log(`making token of char: ${char}`);
-	let error: IvyError = null;
-	let token: Token = null;
-
-	if (WHITESPACE.includes(char)) {
-		getNextToken();
-	}
-	else if (isDigit(char)) {
-		token = getToken(TT.INT, parseInt(char))
-	}
-	else if (char === '+') {
-		token = getToken(TT.PLUS)
-	}
-	else if (char === '-') {
-		token = getToken(TT.MINUS)
-	}
-	else if (char === '/') {
-		token = getToken(TT.DIV)
-	}
-	else if (char === '*') {
-		token = getToken(TT.MUL)
-	}
-	else if (char === '(') {
-		token = getToken(TT.LPAREN)
-	}
-	else if (char === ')') {
-		token = getToken(TT.RPAREN)
-	}
-	else if (char === null) {
-		token = getToken(TT.EOF)
-	}
-	else {
-		return lexingError();	
-	}
-
-	lexer.pos++;
-
-	return token;
+	return op.type === TT.PLUS 
+		? left.value + right.value
+		: left.value - right.value
 }
