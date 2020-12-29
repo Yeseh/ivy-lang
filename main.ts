@@ -1,21 +1,11 @@
-import readline from 'readline';
 import { run } from './src/ivy';
+import fs from 'fs';
 
-const rl = readline.createInterface({
-	input: process.stdin,
-	output: process.stdout,
-});
+const compound = fs.readFileSync('./src/test/programs/compound.ivy');
+const assignment = fs.readFileSync('./src/test/programs/assignment.ivy');
 
-const ivyPrompt = () => {
-	rl.setPrompt('ivy > ');
-	rl.prompt();
-};
+const file = compound.toString();
 
-ivyPrompt();
+const result = run(file);
 
-rl.on('line', input => {
-	const result = run(input);
-
-	console.log('result: ' + result);
-	ivyPrompt();
-});
+console.log(result);

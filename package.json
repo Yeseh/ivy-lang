@@ -8,12 +8,9 @@
     "test:watch": "jest -runInBand --watch",
     "test:cov": "jest --coverage --forceExit --runInBand && start ./coverage/lcov-report/index.html",
     "test:debug": "node --inspect-brk ./node_modules/jest/bin/jest.js --runInBand --forceExit",
-    "dev": "nodemon -e ts ./src/main.ts -r dotenv/config --config ./nodemon.json",
     "start": "ts-node main.ts",
     "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
     "lint": "eslint \"src/**/*.ts\" --fix",
-    "prebuild": "npm run format && npm run lint && npm test",
-    "debug": "node ./dist/src/server.js --debug-brk=5858",
     "commit": "git-cz --disable-emoji"
   },
   "_moduleAliases": {
