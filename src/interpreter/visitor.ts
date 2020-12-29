@@ -3,7 +3,6 @@ import { AstNode } from '../parser/ast-nodes';
 export class Visitor {
 	constructor() {
 		this.visit = this.visit.bind(this);
-		this.defaultVisit = this.visit.bind(this);
 	}
 
 	visit(node: AstNode) {
@@ -11,13 +10,9 @@ export class Visitor {
 		const visitor = this[fnName];
 
 		if (typeof visitor !== 'function') {
-			this.defaultVisit(node);
+		    throw Error(`No visit method available for node ${node.constructor.name}`);
 		}
 
 		return visitor(node);
-	}
-
-	defaultVisit(node: AstNode) {
-		throw Error(`No visit method available for node ${node.constructor.name}`);
 	}
 }

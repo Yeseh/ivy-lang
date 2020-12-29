@@ -5,9 +5,18 @@ import {
 const WHITESPACE = ['\t', ' '];
 const DIGITS = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
 const KEYWORDS = {
-	MUT: getToken(TT.MUT, 'MUT'),
 	BEGIN: getToken(TT.BEGIN, 'BEGIN'),
 	END: getToken(TT.END, 'END'),
+	VAR: getToken(TT.VAR, 'VAR'),
+
+	INT: getToken(TT.INT, 'INT'),
+	FLOAT: getToken(TT.FLOAT, 'INT'),
+	STRING: getToken(TT.STRING, 'STRING'),
+
+	IF: getToken(TT.IF, 'IF'),
+	ELIF: getToken(TT.ELIF, 'ELIF'),
+	ELSE: getToken(TT.ELSE, 'ELSE'),
+
 };
 
 const isDigit = (char: string) => DIGITS.includes(char);
@@ -60,7 +69,19 @@ export class Lexer {
 		}
 	}
 
-	peek() {
+	skipToEndOfLine() {
+		while (this.currentChar !== '\n') {
+			this.advance();
+		}
+	}
+
+	skipMultilineComment() {
+		while (this.currentChar !== '*' && this.peekNextChar() !== '/') {
+			this.advance();
+		}
+	}
+
+	peekNextChar() {
 		const peekPos = this.pos + 1;
 
 		if (peekPos > this.text.length -1) {
@@ -69,19 +90,37 @@ export class Lexer {
 
 		return this.text[peekPos];
 	}
+
+	/** Helper method to fill out current KEYWORD token */
+	peekToken() {
+		let result = this.currentChar;
+		let pos = this.pos;
+
+		while (this.currentChar !== ' ') {
+			pos++;
+			result += this.text[pos];
+		}
+
+		// Attempt to find keyword
+		const token = KEYWORDS[result];
+		// advance(result.length) in getNextToken
+		// If undef -> make ID
+		return token;
+	}
+
 	// TODO: String lexing
-	// TODO: Refactor branching for char comparisons to hash lookup?
+	// TODO: Refactor to several functions to lookup tokens, decreasing complexity
 	getNextToken(): Token {
 		while (this.currentChar !== null) {
 			const char = this.currentChar;
 
 			if (isWhiteSpace(this.currentChar)) {
-				// Recursively call getNextToken on whitespace
 				this.advance();
 				return this.getNextToken();
 			}
 
 			if (isAlphaUs(this.currentChar)) {
+				// Try to match KEYWORD else return lexeme
 				return this._id();
 			}
 
@@ -91,7 +130,7 @@ export class Lexer {
 				this.char = 0;
 			}
 
-			if (this.currentChar === ':' && this.peek() === '=') {
+			if (this.currentChar === ':' && this.peekNextChar() === '=') {
 				this.advance(2);
 
 				return getToken(TT.I_ASSIGN, ':=');
@@ -103,10 +142,11 @@ export class Lexer {
 				return getToken(TT.DOT, '.');
 			}
 
-			if (this.currentChar === ':' && this.peek() === ':') {
+			// Function assignment
+			if (this.currentChar === ':' && this.peekNextChar() === ':') {
 				this.advance(2);
 
-				return getToken(TT.FUNC, '::');
+				return getToken(TT.F_ASSIGN, '::');
 			}
 
 			if (this.currentChar === '{') {
@@ -128,7 +168,31 @@ export class Lexer {
 			}
 
 			if (isDigit(this.currentChar)) {
-				return getToken(TT.INT, this.integer());
+				return this.number();
+			}
+
+			// Single-line comments
+			if (this.currentChar === '/' && this.peekNextChar() === '/') {
+				this.advance();
+				this.skipToEndOfLine();
+				return this.getNextToken();
+			}
+
+			// Multi line comments
+			if (this.currentChar === '/' && this.peekNextChar() === '*') {
+				this.advance();
+				this.skipMultilineComment();
+				return this.getNextToken();
+			}
+
+			if (char === ',') {
+				this.advance();
+				return getToken(TT.COMMA, ',');
+			}
+
+			if (char === ':') {
+				this.advance();
+				return getToken(TT.COLON, ':');
 			}
 
 			if (char === '+') {
@@ -161,20 +225,33 @@ export class Lexer {
 				return getToken(TT.RPAREN, ')');
 			}
 
+
 			this.error();
 		}
 
 		return getToken(TT.EOF, null);
 	}
 
-	integer() {
-		let numStr = '';
+	number() {
+		let result = '';
 
 		while (this.currentChar !== null && isDigit(this.currentChar)) {
-			numStr += this.currentChar;
+			result += this.currentChar;
 			this.advance();
 		}
 
-		return parseInt(numStr);
+		if (this.currentChar === '.') {
+			result += this.currentChar;
+			this.advance();
+
+			while (this.currentChar !== null && isDigit(this.currentChar)) {
+				result += this.currentChar;
+				this.advance();
+			}
+
+			return getToken(TT.FLOAT, parseFloat(result));
+		}
+
+		return getToken(TT.INT, parseInt(result));
 	}
 }
