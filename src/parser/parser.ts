@@ -1,8 +1,8 @@
 import { Lexer } from '../lexer';
 import { Token, TT} from '../token';
-import { AstNode, binaryOperator, num, unaryOperator} from './ast-nodes'
+import { AstNode, binaryOperator, num, unaryOperator, compound, assign, variable, NoOperation, Statement} from './ast-nodes'
 
-const {INT, LPAREN, PLUS, MINUS, DIV, MUL, RPAREN} = TT; 
+const {EOF, INT, LPAREN, PLUS, MINUS, DIV, MUL, RPAREN, BEGIN, END, SEMI, ID, I_ASSIGN, DOT} = TT; 
 
 export class Parser {
     lex: Lexer;
@@ -16,12 +16,23 @@ export class Parser {
     error() {
         throw new Error("Invalid syntax")
     }
+    
+    parse() {
+        const node = this.program();
+
+        if (this.currentToken.type !== EOF) {
+            return this.expr();
+        }
+       
+        return node;
+    }
 
     eat(type: TT | TT[]) {
+        console.log(this.currentToken, type);
         if (
             this.currentToken.type === type ||		
             (Array.isArray(type) && type.includes(this.currentToken.type))
-        ) {			
+        ) {		
             this.currentToken = this.lex.getNextToken();
         }
         else {
@@ -52,6 +63,9 @@ export class Parser {
             this.eat(RPAREN);
             
             return node; 
+        }
+        else {
+            return this.variable();
         }
     }
     /**
@@ -98,7 +112,82 @@ export class Parser {
         return node;
     }
 
-    parse() {
-        return this.expr();
+    program() {
+        const node = this.compoundStatement();
+        this.eat(DOT);
+
+        return node;
+    }
+
+    compoundStatement() {
+        this.eat(BEGIN)
+        const nodes: Statement[] = this.statementList();
+        this.eat(END);
+
+        const root = compound();
+
+        for (const node of nodes) {
+            root.children.push(node);
+        }
+
+        return root;
+    }
+
+    statementList() {
+        let node = this.statement();
+
+        const results = [node];
+
+        while (this.currentToken.type === TT.SEMI) {
+            this.eat(SEMI);
+            results.push(this.statement());
+        }
+
+        if (this.currentToken.type === ID) {
+            this.error();
+        }
+
+        return results;
+    }
+
+    statement() {
+        let node;
+
+        if (this.currentToken.type === BEGIN) {
+            node = this.compoundStatement();            
+        }
+        else if (this.currentToken.type === I_ASSIGN) {
+            node = this.assignmentStatement();
+        }
+        else {
+            node = this.empty();
+        }
+
+        return node;
+    }
+
+    assignmentStatement() {
+        const left = this.variable()
+        const token = this.currentToken;
+
+        this.eat(I_ASSIGN);
+
+        const right = this.expr();
+
+        const node = assign(left, token, right);
+
+        return node;
+    }
+
+    variable() {
+        const node = variable(this.currentToken)
+
+        this.eat(ID);
+
+        return node;
+    }
+
+    empty() {
+        return new NoOperation();
     }
 }

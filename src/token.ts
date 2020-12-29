@@ -1,13 +1,24 @@
 export enum TT {
-    INT = 'INT',
-    FLOAT = 'FLOAT',
-    PLUS = 'PLUS',
-    MINUS = 'MINUS',
-    MUL = 'MUL',
-    DIV = 'DIV',
-    LPAREN = 'LPAREN',
-    RPAREN = 'RPAREN',
-    EOF = 'EOF'
+    INT,
+    FLOAT,
+    PLUS, 
+    MINUS,
+    MUL, 
+    DIV, 
+    LPAREN,
+    RPAREN,
+    LBRACE,
+    RBRACE,
+    ID,
+    SEMI,
+    I_ASSIGN,
+    MUT,
+    FUNC,
+    LF,
+    EOF,
+    BEGIN,
+    END,
+    DOT
 }
 
 export class Token {

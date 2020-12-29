@@ -9,6 +9,8 @@ export const run = text => {
 
 	const interpreter = new Interpreter(parser);
 
-	return interpreter.run();
+	interpreter.run();
+
+	return interpreter.GLOBAL_SCOPE;
 };
 

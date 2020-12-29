@@ -87,4 +87,25 @@ describe('Interpreter', () => {
 
         expect(result).toEqual([-3, 3, 1, 5, -15]);
     })
+
+    it('Should correctly execute a test program', () => {
+        const expr = `
+            BEGIN
+                BEGIN
+                    number := 2;
+                    a := number;
+                    b := 10 * a + 10 * number / 4;
+                    c := a - - b
+                END;
+                x := 11;
+            END.
+        `
+        const result = run(expr);
+
+        expect(result).toBeDefined();
+        expect(result.a).toBe(2);
+        expect(result.b).toBe(25);
+        expect(result.c).toBe(45);
+        expect(result.x).toBe(11);
+    })
 })
