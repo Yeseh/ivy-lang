@@ -245,7 +245,7 @@ export class Parser {
     			this.eat(TT.STRING);
     	}
 
-    	return typeNode(token);
+    	return typeNode(token, this.currentToken.type);
 	}
 
 	// TODO: rewrite to LBRACE statement_list RBRACE

@@ -1,14 +1,14 @@
-class IvySymbol {
+export class IvySymbol {
     constructor(public name: string, public type?: IvySymbol) { }
 }
 
-class BuiltInTypeSymbol extends IvySymbol {
+export class BuiltInTypeSymbol extends IvySymbol {
     constructor(public name: string) {
         super(name);
     }
 }
 
-class VarSymbol extends IvySymbol {
+export class VarSymbol extends IvySymbol {
     constructor(
         public name: string, 
         public type: BuiltInTypeSymbol) {

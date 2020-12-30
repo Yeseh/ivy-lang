@@ -100,7 +100,7 @@ export class VarDecl extends AstNode {
 }
 
 export class Type extends AstNode {
-	constructor(token: Token) {
+	constructor(token: Token, public name: string) {
 		super(token);
 	}
 }
@@ -113,7 +113,7 @@ export const unaryOperator = (token: Token, expr: ExprNode) => new UnaryOperator
 export const variable = (token: Token) => new Variable(token);
 export const assign = (left: Variable, op: Token, right: ExprNode) => new Assign(left, op, right);
 export const compound = () => new Compound();
-export const typeNode = (token: Token) => new Type(token);
+export const typeNode = (token: Token, name: string) => new Type(token, name);
 export const program = (name: string, block: Block) => new Program(name, block);
 export const varDecl = (variable: Variable, type: Type) => new VarDecl(variable, type);
 export const block = (declarations: AstNode[], compound: Compound) => new Block(declarations, compound);

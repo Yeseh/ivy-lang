@@ -5,6 +5,7 @@ import {
 	BinaryOperator, Compound, Num, UnaryOperator, Assign, Variable, Program, Block, VarDecl, Type
 } from '../parser/ast-nodes';
 import { TT } from '../token';
+import { SymbolTableBuilder } from './symbol-table';
 
 interface SymbolTable {
     [k: string]: any;
@@ -21,7 +22,9 @@ export class Interpreter extends Visitor {
     }
 
     run = () => {
-    	const tree = this.parser.parse();
+		const tree = this.parser.parse();
+		const symtab = new SymbolTableBuilder();
+		symtab.visit(tree);
     	return this.visit(tree);
     }
 
@@ -63,7 +66,7 @@ export class Interpreter extends Visitor {
     }
 
     visitVariable = (node: Variable) => {
-    	const name = node.name;
+		const name = node.name;
     	const value = this.GLOBAL_SCOPE[name];
 
     	if (!value) {
