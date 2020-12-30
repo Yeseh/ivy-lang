@@ -2,7 +2,7 @@
 import { Visitor } from './visitor';
 import { Parser } from '../parser/parser';
 import {
-	BinaryOperator, Compound, Num, UnaryOperator, Assign, Variable,
+	BinaryOperator, Compound, Num, UnaryOperator, Assign, Variable, Program, Block, VarDecl, Type
 } from '../parser/ast-nodes';
 import { TT } from '../token';
 
@@ -71,7 +71,27 @@ export class Interpreter extends Visitor {
     	}
 
     	return value;
-    }
+	}
+	
+	visitProgram = (node: Program) => {
+		this.visit(node.block);
+	}
+
+	visitBlock = (node: Block) => {
+		for(const decl of node.declarations) {
+			this.visit(decl);
+		}
+
+		this.visit(node.compound);
+	}
+
+	visitVarDecl = () => {
+		return;
+	}
+
+	visitType = () => {
+		return;
+	}
 
     visitNoOperation = () => {
     	return;

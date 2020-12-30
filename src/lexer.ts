@@ -8,6 +8,7 @@ const KEYWORDS = {
 	BEGIN: getToken(TT.BEGIN, 'BEGIN'),
 	END: getToken(TT.END, 'END'),
 	VAR: getToken(TT.VAR, 'VAR'),
+	PROGRAM: getToken(TT.PROGRAM, 'PROGRAM'),
 
 	INT: getToken(TT.INT, 'INT'),
 	FLOAT: getToken(TT.FLOAT, 'INT'),
@@ -16,6 +17,7 @@ const KEYWORDS = {
 	IF: getToken(TT.IF, 'IF'),
 	ELIF: getToken(TT.ELIF, 'ELIF'),
 	ELSE: getToken(TT.ELSE, 'ELSE'),
+
 
 };
 
@@ -79,6 +81,8 @@ export class Lexer {
 		while (this.currentChar !== '*' && this.peekNextChar() !== '/') {
 			this.advance();
 		}
+
+		this.advance(2);
 	}
 
 	peekNextChar() {
@@ -173,14 +177,14 @@ export class Lexer {
 
 			// Single-line comments
 			if (this.currentChar === '/' && this.peekNextChar() === '/') {
-				this.advance();
+				this.advance(2);
 				this.skipToEndOfLine();
 				return this.getNextToken();
 			}
 
 			// Multi line comments
 			if (this.currentChar === '/' && this.peekNextChar() === '*') {
-				this.advance();
+				this.advance(2);
 				this.skipMultilineComment();
 				return this.getNextToken();
 			}
@@ -249,9 +253,9 @@ export class Lexer {
 				this.advance();
 			}
 
-			return getToken(TT.FLOAT, parseFloat(result));
+			return getToken(TT.FLOAT_CONST, parseFloat(result));
 		}
 
-		return getToken(TT.INT, parseInt(result));
+		return getToken(TT.INTEGER_CONST, parseInt(result));
 	}
 }

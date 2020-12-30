@@ -6,7 +6,7 @@ export abstract class AstNode {
     token: Token;
 
     constructor(token?: Token) {
-    	this.token = token ?? null;
+    	this.token = token;
     }
 }
 export class BinaryOperator extends AstNode {

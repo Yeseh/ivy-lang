@@ -6,7 +6,7 @@
         "moduleResolution": "node",
         "sourceMap": false,
         "outDir": "./dist",
-        "baseUrl": "src",
+        "baseUrl": ".",
         "paths": {
             "@helpers/*": [
                 "helpers/*"
@@ -32,7 +32,7 @@
         "es2015"
     ],
     "include": [
-        "src/**/*.ts",
+        "**/*.ts",
         "**/*.d.ts"
     ],
     "exclude": [

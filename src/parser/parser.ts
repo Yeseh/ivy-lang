@@ -14,7 +14,8 @@ export class Parser {
 
 	constructor(lex: Lexer) {
     	this.lex = lex;
-    	this.currentToken = lex.getNextToken();
+		this.currentToken = lex.getNextToken();
+		this.errors = [];
 	}
 
 	error(info?: string) {
@@ -44,7 +45,8 @@ export class Parser {
     		this.currentToken.type === type ||
             (Array.isArray(type) && type.includes(this.currentToken.type))
     	) {
-    		this.currentToken = this.lex.getNextToken();
+			console.log(this.currentToken);
+			this.currentToken = this.lex.getNextToken();
     	}
     	else {
     		this.error('Expected token ' + type);
@@ -70,7 +72,7 @@ export class Parser {
     	}
 		else if (token.type === TT.FLOAT_CONST) {
 			this.eat(TT.FLOAT_CONST)
-			[]
+			return num(token);
 		}
     	else if (token.type === TT.LPAREN) {
     		this.eat(TT.LPAREN);
