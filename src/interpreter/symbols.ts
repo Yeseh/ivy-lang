@@ -23,12 +23,15 @@ export class VarSymbol extends IvySymbol {
 }
 
 export class FunctionSymbol extends IvySymbol {
+	params: VarSymbol[];
+
 	constructor(
 		name: string,
         public returnType: BuiltInTypeSymbol,
-        public params: VarSymbol[]
 	) {
 		super(name, new BuiltInTypeSymbol('FUNCTION'));
+
+	//	this.params = params ?? [];
 	}
 }
 

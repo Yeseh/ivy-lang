@@ -1,9 +1,18 @@
 int a, b;
 
 a := 1;
+b ?= 2;
 
-int func :: (int y) {
-   int b;
 
-   b:= 2;
+int func :: (int c) {
+   c := 3;
+
+   int nest :: (int d) {
+      d := 4;
+   }
+};
+
+int two :: (int x) {
+   x := 3;
+   a := 2;
 };

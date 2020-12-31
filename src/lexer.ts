@@ -151,6 +151,18 @@ export class Lexer {
 				return getToken(TT.I_ASSIGN, ':=');
 			}
 
+			if (this.currentChar === '?' && this.peekNextChar() === '=') {
+				this.advance(2);
+
+				return getToken(TT.M_ASSIGN, '?=');
+			}
+
+			if (this.currentChar === '=') {
+				this.advance();
+
+				return getToken(TT.R_ASSIGN, '=');
+			}
+
 			if (this.currentChar === '.') {
 				this.advance();
 

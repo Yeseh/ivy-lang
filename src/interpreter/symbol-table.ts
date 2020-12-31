@@ -12,6 +12,7 @@ export class ScopedSymbolTable {
     constructor(
        public scopeName: string,
        public scopeLvl: number,
+       public enclosingScope: ScopedSymbolTable
     ) {
     	this._symbols = {};
     	this.init();
@@ -26,6 +27,14 @@ export class ScopedSymbolTable {
     }
 
     lookup = (name: string) => {
-    	return this._symbols[name];
+    	const lookup = this._symbols[name];
+
+    	if (lookup) {
+    		return lookup;
+    	};
+
+    	if (this.enclosingScope !== null) {
+    		return this.enclosingScope.lookup(name);
+    	}
     }
 }

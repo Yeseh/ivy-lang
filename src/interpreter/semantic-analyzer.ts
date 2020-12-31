@@ -5,17 +5,17 @@ import {
 	Compound, IvyFile, BinaryOperator,
 	UnaryOperator, Num,
 	NoOperation, VarDecl, Assign, Variable,
-	ProcedureDecl,
+	FunctionDecl,
 } from '../parser/ast-nodes';
-import { VarSymbol } from './symbols';
+import { FunctionSymbol, VarSymbol } from './symbols';
 
 export class SemanticAnalyzer extends Visitor {
-    scope: ScopedSymbolTable
+    currentScope: ScopedSymbolTable
 
     constructor() {
     	super();
 
-    	this.scope = new ScopedSymbolTable('global', 1);
+    	this.currentScope = null;
     }
 
     // visitBlock = (node: Scope) => {
@@ -26,8 +26,15 @@ export class SemanticAnalyzer extends Visitor {
     // 	this.visit(node.compound);
     // }
 
-    visitFile = (node: IvyFile) => {
+    visitIvyFile = (node: IvyFile) => {
+    	console.log('ENTER SCOPE: file');
+
+    	this.currentScope = new ScopedSymbolTable('file', 1, null);
+
     	this.visit(node.compound);
+    	console.log(this.currentScope);
+
+    	console.log('LEAVE SCOPE: file');
     }
 
     visitBinaryOperator = (node: BinaryOperator) => {
@@ -54,18 +61,49 @@ export class SemanticAnalyzer extends Visitor {
     }
 
     visitVarDecl = (node: VarDecl) => {
-    	this.scope.define(new VarSymbol(
-    		node.variable.name,
-    		this.scope.lookup(node.type.name),
-    	));
+    	const type = this.currentScope.lookup(node.type.name);
+
+    	node.variable.forEach(v => {
+    		this.currentScope.define(new VarSymbol(
+    		    v.name,
+    		    type,
+    	    ));
+    	});
     }
 
-    visitProcedureDecl = (node: ProcedureDecl) => {
-    	return;
+    visitFunctionDecl = (node: FunctionDecl) => {
+    	console.log('ENTER PROCEDURE SCOPE: ' + node.name);
+    	this.currentScope.define(new FunctionSymbol(node.name, node.returnType));
+
+    	const funcScope = new ScopedSymbolTable(
+    		node.name,
+    		this.currentScope.scopeLvl + 1,
+    		this.currentScope
+    	);
+
+    	this.currentScope = funcScope;
+
+    	for (const p of node.params) {
+    		const type = this.currentScope.lookup(p.type.name);
+
+    		if (!type) {
+    			throw new Error(`Usage of undeclared type '${p.type.name}`);
+    		}
+
+    		this.currentScope.define(new VarSymbol(
+    			p.variable.name,
+    			type
+    		));
+    	}
+
+    	this.visit(node.compound);
+
+    	this.currentScope = this.currentScope.enclosingScope;
+    	console.log('LEAVE PROCEDURE SCOPE: ' + node.name);
     }
 
     visitAssign = (node: Assign) => {
-    	if (!this.scope.lookup(node.left.name)) {
+    	if (!this.currentScope.lookup(node.left.name)) {
     		throw new Error(`Assignment to undeclared variable ${node.left.name}`);
     	}
 
@@ -73,7 +111,7 @@ export class SemanticAnalyzer extends Visitor {
     }
 
     visitVariable = (node: Variable) => {
-    	if (!this.scope.lookup(node.name)) {
+    	if (!this.currentScope.lookup(node.name)) {
 	 		throw new Error(`Usage of undeclared variable ${node.name}`);
     	}
     }

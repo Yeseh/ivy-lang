@@ -12,7 +12,8 @@ interface SymbolTable {
     [k: string]: any;
 }
 export class Interpreter extends Visitor {
-    parser: Parser;
+	parser: Parser;
+	sym: SemanticAnalyzer;
     GLOBAL_SCOPE: SymbolTable;
 
     constructor(parser: Parser) {
@@ -20,12 +21,12 @@ export class Interpreter extends Visitor {
 
     	this.parser = parser;
     	this.GLOBAL_SCOPE = {};
+    	this.sym = new SemanticAnalyzer();
     }
 
     run = () => {
     	const tree = this.parser.parse();
-    	const sym = new SemanticAnalyzer();
-    	sym.visit(tree);
+    	this.sym.visit(tree);
     	return this.visit(tree);
     }
 

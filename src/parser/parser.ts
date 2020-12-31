@@ -8,7 +8,7 @@ import {
 	assign, variable, NoOperation, Statement,
 	Compound, VarDecl, varDecl, typeNode,
 	file, Param, Type,
-	procedureDecl as functionDeclaration,
+	functionDecl,
 	Variable,
 } from './ast-nodes';
 export class Parser {
@@ -36,9 +36,9 @@ export class Parser {
 	parse() {
     	const node = this.file();
 
-    	if (this.currentToken.type !== TT.EOF) {
-    		return this.expr();
-    	}
+    	// if (this.currentToken.type !== TT.EOF) {
+    	// 	return this.expr();
+    	// }
 
     	return node;
 	}
@@ -174,24 +174,23 @@ export class Parser {
 		// }
 		const typenode = this.typeSpec();
 		// IF !typenode -> R_ASSIGN | function_call
+		const peek = this.lex.peekChars(3).trim();
 
-		const left = variable(this.currentToken);
-
-		const peek = this.lex.peekChars(3);
-
-		console.log(peek);
+		console.log({
+			peek,
+		});
 
 		if (typenode && peek === '::') {
-			node = this.functionDeclaration();
+			node = this.functionDeclaration(typenode);
 		}
 		// TODO: Inline assignment en type-declaratie
 		else if (!typenode && (peek === ':=' || peek === '?=')) {
 			// TODO: Semantic error als er geen typenode is maar wel I/M assignment
-			node = this.assignmentStatement(left, typenode);
+			node = this.assignmentStatement(typenode);
 		}
 		/* else if FUNCTION_CALL */
 		else if (typenode) {
-		 	node = this.variableDeclaration(left, typenode);
+		 	node = this.variableDeclaration(typenode);
 		}
     	else {
     		node = this.empty();
@@ -202,9 +201,11 @@ export class Parser {
 	// Variable declaration: (type)? ID (COMMA | assignment) SEMI
 	// Assignment: (DECLARATION | variable) (I_ASSIGN | M_ASSIGN | R_ASSIGN)
 	//
-	variableDeclaration(left: Variable, type: Type) {
+	variableDeclaration(type: Type) {
+		const left = variable(this.currentToken);
 		const vars = [left];
 		this.eat(TT.ID);
+
 		// While there are comma separated var declarations
 		while (this.currentToken.type === TT.COMMA) {
 			this.eat(TT.COMMA);
@@ -212,14 +213,12 @@ export class Parser {
 			this.eat(TT.ID);
 		}
 
-		const decls = vars.map(v => varDecl(v, type));
-
-		console.log(decls);
-		return decls;
+		return varDecl(vars, type);
 	}
 
-	functionDeclaration() {
+	functionDeclaration(returnType: Type) {
 		const fnName = this.currentToken.value;
+		this.eat(TT.ID);
 		this.eat(TT.F_ASSIGN);
 
 		let params: Param[];
@@ -230,20 +229,25 @@ export class Parser {
 			this.eat(TT.RPAREN);
 		}
 
-		const blockCompound = this.compound(fnName);
+		this.eat(TT.LBRACE);
+		const comp = this.compound(fnName);
+		this.eat(TT.RBRACE);
 
-		return functionDeclaration(fnName, params, blockCompound);
+		return functionDecl(fnName, returnType, params, comp);
 	}
 
-	assignmentStatement(left: Variable, type: Type) {
+	assignmentStatement(type: Type) {
 		let mut = false;
-    	const token = this.currentToken;
 
+		const token = this.currentToken;
+		const left = variable(this.currentToken);
+
+		this.eat(TT.ID);
 		// Switch assignment types;
 		if (this.currentToken.type === TT.I_ASSIGN) {
 			this.eat(TT.I_ASSIGN);
 		}
-		if (this.currentToken.type === TT.M_ASSIGN) {
+		else if (this.currentToken.type === TT.M_ASSIGN) {
 			this.eat(TT.M_ASSIGN);
 			mut = true;
 		}

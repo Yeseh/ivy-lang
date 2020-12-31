@@ -1,4 +1,4 @@
-import { Token } from '../token';
+import { TT, Token } from '../token';
 
 export type ExprNode = Num | BinaryOperator | UnaryOperator | AstNode;
 
@@ -106,7 +106,7 @@ export class IvyFile extends AstNode {
 
 export class VarDecl extends AstNode {
 	constructor(
-		public variable: Variable,
+		public variable: Variable[],
 		public type: Type,
 		public mut: boolean
 	) {
@@ -120,12 +120,12 @@ export class Type extends AstNode {
 	}
 }
 
-export class ProcedureDecl extends AstNode {
+export class FunctionDecl extends AstNode {
 	constructor(
 		public name: string,
+		public returnType: Type,
 		public params: Param[],
 		public compound: Compound,
-		public returnType?: Type,
 	) {
 		super();
 	}
@@ -141,6 +141,6 @@ export const assign = (left: Variable, op: Token, right: ExprNode) => new Assign
 export const compound = (name: string) => new Compound(name);
 export const typeNode = (token: Token, name: string) => new Type(token, name);
 export const file = (name: string, compound: Compound) => new IvyFile(name, compound)
-export const varDecl = (variable: Variable, type: Type, mut: boolean = false) => new VarDecl(variable, type, mut);
+export const varDecl = (variable: Variable[], type: Type, mut: boolean = false) => new VarDecl(variable, type, mut);
 // export const block = (declarations: AstNode[], compound: Compound) => new Block(declarations, compound);
-export const procedureDecl = (name: string, params: Param[], compound: Compound) => new ProcedureDecl(name, params, compound)
+export const functionDecl = (name: string, returnType: Type, params: Param[], compound: Compound) => new FunctionDecl(name, returnType, params, compound)
