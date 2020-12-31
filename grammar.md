@@ -1,12 +1,32 @@
 # functions
 
-program                 : PROGRAM variable SEMI block DOT -> ancient BS, remove later
+file                    : compound -> represents root scope for now
 
-block                   : declarations compound_statement
+compound:               : statement_list
 
-declarations            : VAR (variable_declaration SEMI)+
+statement_list          : statement 
+                        | statement SEMI statement_list 
 
-variable_declaration    : ID (COMMA ID)* COLON type_spec
+statement               : function_declaration 
+                        | function_call
+                        | variable_declaration
+                        | empty_statement
+
+function_declaration    : type_spec? ID F_ASSIGN parameter_list LBRACE compound RBRACE
+// parameter_list
+// parameter
+
+function_call           : object_accessor LPAREN argument_list RPAREN
+
+argument_list           : ID (COMMA ID) *
+object_accessor         : ID (BRACKET_ACCESSOR | (DOT ID))*
+bracket_accessor        : LBRACKET (ID | STRING) RBRACKET
+
+variable_declaration    : type_spec? variable_reference (COMMA variable_reference)* 
+
+variable_reference      : (assignement_statement | variable)
+
+assignment_statement    : variable (I_ASSIGN | R_ASSIGN) expr
 
 type_spec               : STRING 
                         | INTEGER 
@@ -14,14 +34,7 @@ type_spec               : STRING
 
 compound_statement      : BEGIN statement_list END
 
-statement_list          : statement 
-                        | statement LF statement_list 
 
-statement               : compound_statement 
-                        | assignment_statement
-                        | empty_statement
-
-assignment_statement    : variable (I_ASSIGN | R_ASSIGN) expr
 
 empty                   :
 

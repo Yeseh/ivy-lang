@@ -1,0 +1,9 @@
+int a, b;
+
+a := 1;
+
+int func :: (int y) {
+   int b;
+
+   b:= 2;
+};

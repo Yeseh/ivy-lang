@@ -1,12 +1,9 @@
 import { run } from './src/ivy';
 import fs from 'fs';
 
-//const compound = fs.readFileSync('./src/test/programs/compound.ivy');
-//const assignment = fs.readFileSync('./src/test/programs/assignment.ivy');
-const program = fs.readFileSync('./src/test/programs/name-error.ivy');
+// const compound = fs.readFileSync('./src/test/programs/compound.ivy');
+// const assignment = fs.readFileSync('./src/test/programs/assignment.ivy');
+fs.readFile('./src/test/programs/procedures.ivy', (err, res) => {
+	console.log(run(res.toString()));
+});
 
-const file = program.toString();
-
-const result = run(file);
-
-console.log(result);

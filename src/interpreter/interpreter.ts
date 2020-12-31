@@ -2,10 +2,11 @@
 import { Visitor } from './visitor';
 import { Parser } from '../parser/parser';
 import {
-	BinaryOperator, Compound, Num, UnaryOperator, Assign, Variable, Program, Block, VarDecl, Type
+	BinaryOperator, Compound, Num,
+	UnaryOperator, Assign, Variable, IvyFile, VarDecl, Type,
 } from '../parser/ast-nodes';
 import { TT } from '../token';
-import { SymbolTableBuilder } from './symbol-table';
+import { SemanticAnalyzer } from './semantic-analyzer';
 
 interface SymbolTable {
     [k: string]: any;
@@ -22,9 +23,9 @@ export class Interpreter extends Visitor {
     }
 
     run = () => {
-		const tree = this.parser.parse();
-		const symtab = new SymbolTableBuilder();
-		symtab.visit(tree);
+    	const tree = this.parser.parse();
+    	const sym = new SemanticAnalyzer();
+    	sym.visit(tree);
     	return this.visit(tree);
     }
 
@@ -66,7 +67,7 @@ export class Interpreter extends Visitor {
     }
 
     visitVariable = (node: Variable) => {
-		const name = node.name;
+    	const name = node.name;
     	const value = this.GLOBAL_SCOPE[name];
 
     	if (!value) {
@@ -74,21 +75,25 @@ export class Interpreter extends Visitor {
     	}
 
     	return value;
-	}
-	
-	visitProgram = (node: Program) => {
-		this.visit(node.block);
-	}
+    }
 
-	visitBlock = (node: Block) => {
-		for(const decl of node.declarations) {
-			this.visit(decl);
-		}
-
+	visitIvyFile = (node: IvyFile) => {
 		this.visit(node.compound);
 	}
 
+	// visitBlock = (node: Scope) => {
+	// 	for (const decl of node.declarations) {
+	// 		this.visit(decl);
+	// 	}
+
+	// 	this.visit(node.compound);
+	// }
+
 	visitVarDecl = () => {
+		return;
+	}
+
+	visitFunctionDecl = () => {
 		return;
 	}
 

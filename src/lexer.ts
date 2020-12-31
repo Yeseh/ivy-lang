@@ -5,14 +5,12 @@ import {
 const WHITESPACE = ['\t', ' '];
 const DIGITS = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
 const KEYWORDS = {
-	BEGIN: getToken(TT.BEGIN, 'BEGIN'),
-	END: getToken(TT.END, 'END'),
-	VAR: getToken(TT.VAR, 'VAR'),
-	PROGRAM: getToken(TT.PROGRAM, 'PROGRAM'),
+	PROCEDURE: getToken(TT.PROCEDURE, 'PROCEDURE'),
 
 	INT: getToken(TT.INT, 'INT'),
 	FLOAT: getToken(TT.FLOAT, 'INT'),
 	STRING: getToken(TT.STRING, 'STRING'),
+	VOID: getToken(TT.VOID, 'VOID'),
 
 	IF: getToken(TT.IF, 'IF'),
 	ELIF: getToken(TT.ELIF, 'ELIF'),
@@ -94,6 +92,19 @@ export class Lexer {
 
 		return this.text[peekPos];
 	}
+
+	peekChars(num: number) {
+		let result = '';
+		let	peekPos = this.pos;
+
+		while (peekPos - this.pos < num) {
+			result += this.text[peekPos];
+			peekPos++;
+		}
+
+		return result;
+	}
+
 
 	/** Helper method to fill out current KEYWORD token */
 	peekToken() {

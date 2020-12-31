@@ -4,8 +4,10 @@ export enum TT {
     INT = 'INT',
     FLOAT = 'FLOAT',
     STRING = 'STRING',
+    VOID = 'VOID',
     ARRAY = 'ARRAY',
     OBJECT = 'OBJECT',
+    FUNCTION = 'FUNCTION',
 
     // Operators
     PLUS = 'PLUS',
@@ -14,10 +16,7 @@ export enum TT {
     DIV = 'DIV',
 
     // Blocks
-    BEGIN = 'BEGIN',
-    END = 'END',
     COMMA = 'COMMA',
-    PROGRAM = 'PROGRAM',
     LPAREN = 'LPAREN',
     RPAREN = 'RPAREN',
     LBRACE = 'LBRACE',
@@ -29,11 +28,12 @@ export enum TT {
 
     // Variables
     ID = 'ID',
-    ASSIGN = 'ASSIGN', // re-assign, overwrite mutable value =
+    R_ASSIGN = 'R_ASSIGN', // re-assign, overwrite mutable value =
     I_ASSIGN = 'I_ASSIGN', // Initialize and assign immutable variable :=
     M_ASSIGN = 'M_ASSIGN', // Initialize and assign mutable variable ?=
 
     // Functions
+    PROCEDURE = 'PROCEDURE',
     F_ASSIGN = 'F_ASSIGN', // Function assignment ::
     LAMBDA = 'LAMBDA', // Fat arrow function shorthand =>
 
@@ -61,6 +61,9 @@ export enum TT {
     B_COMMENT = 'BCOMMENT',
     POUND = 'POUND' // # for annotations?
 }
+
+export const builtInTypes = [TT.INT, TT.FLOAT, TT.STRING, TT.FUNCTION];
+export const assignmentOps = [TT.I_ASSIGN, TT.M_ASSIGN, TT.R_ASSIGN];
 
 export class Token {
     type: TT;

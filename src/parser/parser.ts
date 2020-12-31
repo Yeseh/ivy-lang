@@ -1,11 +1,15 @@
 import { Lexer } from '../lexer';
-import { Token, TT } from '../token';
+import {
+	Token, TT, builtInTypes, assignmentOps,
+} from '../token';
 import {
 	AstNode, binaryOperator, num,
 	unaryOperator, compound,
 	assign, variable, NoOperation, Statement,
-	Block, block, VarDecl, varDecl, typeNode,
-	program,
+	Compound, VarDecl, varDecl, typeNode,
+	file, Param, Type,
+	procedureDecl as functionDeclaration,
+	Variable,
 } from './ast-nodes';
 export class Parser {
     lex: Lexer;
@@ -30,7 +34,7 @@ export class Parser {
 	}
 
 	parse() {
-    	const node = this.program();
+    	const node = this.file();
 
     	if (this.currentToken.type !== TT.EOF) {
     		return this.expr();
@@ -40,12 +44,13 @@ export class Parser {
 	}
 
 	// TODO: Instead of throwing error, return the error
+	// TODO: Recognize invalid type names instead of standard error
 	eat(type: TT | TT[]) {
+		console.log(this.currentToken);
     	if (
     		this.currentToken.type === type ||
             (Array.isArray(type) && type.includes(this.currentToken.type))
     	) {
-			console.log(this.currentToken);
 			this.currentToken = this.lex.getNextToken();
     	}
     	else {
@@ -71,7 +76,7 @@ export class Parser {
     		return num(token);
     	}
 		else if (token.type === TT.FLOAT_CONST) {
-			this.eat(TT.FLOAT_CONST)
+			this.eat(TT.FLOAT_CONST);
 			return num(token);
 		}
     	else if (token.type === TT.LPAREN) {
@@ -129,132 +134,17 @@ export class Parser {
     	return node;
 	}
 
-	program() {
-		this.eat(TT.PROGRAM);
-
-		const varNode = this.variable();
-		const progName = varNode.name;
-
-		this.eat(TT.SEMI);
-
-		const blockNode = this.block();
-		const progNode = program(progName, blockNode);
-
-		this.eat(TT.DOT);
-
-    	return progNode;
+	file() {
+		// File should create a scope for itself
+		// Imports add to the file scope
+		return file('main.ivy', this.compound('file'));
 	}
 
-	block() {
-    	return block(this.declarations(), this.compoundStatement());
-	}
+	// TODO: Rename to proper grammar
+	compound(name: string) {
+		const nodes: Statement[] = this.statementList();
 
-	declarations() {
-    	let declarations = [];
-
-    	// Look for VAR keyword
-    	if (this.currentToken.type === TT.VAR) {
-    		this.eat(TT.VAR);
-    		// eslint-disable-next-line
-    		// @ts-ignore
-    		while (this.currentToken.type === TT.ID) { // Look for ID
-    			const vars = this.variableDeclaration();
-    			declarations = [...declarations, ...vars];
-
-    			// TODO: replace with LF
-    			// Look for semi to end declaration
-    			this.eat(TT.SEMI);
-    		}
-    	}
-
-    	return declarations;
-	}
-	/*
-
-	function_declaration: ID F_ASSIGN function_parameters compound_statement
-	function_parameters: (variable_declaration COMMA)*
-	variable_declaration: (int | float | string) ID
-
-	(int x, string y)
-
-	functionDeclaration() {
-		const var = this.variable()
-		const token = this.currentToken
-
-		this.eat(F_ASSIGN) // eat ::
-		const paramList = this.functionParameters();
-
-		return functionDeclaration(left, paramList, compound_statement);
-	}
-
-	functionParameters() {
-		this.eat(LPAREN)
-		let params = [];
-
-		if (this.currentToken === TYPE) {
-			params = [...params, ]
-			params.push(this.variableDeclaration())
-
-
-			while (this.currentToken === )
-		}
-
-		this.eat(RPAREN);
-
-		return params;
-	}
-	*/
-
-	// TODO: rewrite to (int | float | string) ID
-	variableDeclaration() {
-    	const vars = [variable(this.currentToken)];
-
-    	this.eat(TT.ID);
-
-    	// int test := 1;
-    	// int test1 ?= 2;:w
-
-    	// While there are comma separated var declarations
-    	while (this.currentToken.type === TT.COMMA) {
-    		this.eat(TT.COMMA);
-    		vars.push(variable(this.currentToken));
-    		this.eat(TT.ID);
-    	}
-
-    	// TODO: if eating colon fails, attempt to infer type from variable
-    	this.eat(TT.COLON);
-
-    	const typen = this.typeSpec();
-
-    	const decls = vars.map(v => varDecl(v, typen));
-
-    	return decls;
-	}
-
-	typeSpec() {
-    	const token = this.currentToken;
-
-    	switch (this.currentToken.type) {
-    		case TT.INT:
-    			this.eat(TT.INT);
-    			break;
-    		case TT.FLOAT:
-    			this.eat(TT.FLOAT);
-    			break;
-    		case TT.STRING:
-    			this.eat(TT.STRING);
-    	}
-
-    	return typeNode(token, this.currentToken.type);
-	}
-
-	// TODO: rewrite to LBRACE statement_list RBRACE
-	compoundStatement() {
-    	this.eat(TT.BEGIN);
-    	const nodes: Statement[] = this.statementList();
-    	this.eat(TT.END);
-
-    	const root = compound();
+		const root = compound(name);
 
     	for (const node of nodes) {
     		root.children.push(node);
@@ -278,33 +168,125 @@ export class Parser {
 
 	statement() {
     	let node;
+		// TODO: Allow anonymous block scopes??
+    	// if (this.currentToken.type === TT.LBRACE) {
+    	// 	node = this.blockCompound();
+		// }
+		const typenode = this.typeSpec();
+		// IF !typenode -> R_ASSIGN | function_call
 
-    	if (this.currentToken.type === TT.BEGIN) {
-    		node = this.compoundStatement();
-    	}
-    	else if (this.currentToken.type === TT.ID) {
-    		node = this.assignmentStatement();
-    	}
-    	// TODO: function assignment
+		const left = variable(this.currentToken);
+
+		const peek = this.lex.peekChars(3);
+
+		console.log(peek);
+
+		if (typenode && peek === '::') {
+			node = this.functionDeclaration();
+		}
+		// TODO: Inline assignment en type-declaratie
+		else if (!typenode && (peek === ':=' || peek === '?=')) {
+			// TODO: Semantic error als er geen typenode is maar wel I/M assignment
+			node = this.assignmentStatement(left, typenode);
+		}
+		/* else if FUNCTION_CALL */
+		else if (typenode) {
+		 	node = this.variableDeclaration(left, typenode);
+		}
     	else {
     		node = this.empty();
     	}
 
     	return node;
 	}
+	// Variable declaration: (type)? ID (COMMA | assignment) SEMI
+	// Assignment: (DECLARATION | variable) (I_ASSIGN | M_ASSIGN | R_ASSIGN)
+	//
+	variableDeclaration(left: Variable, type: Type) {
+		const vars = [left];
+		this.eat(TT.ID);
+		// While there are comma separated var declarations
+		while (this.currentToken.type === TT.COMMA) {
+			this.eat(TT.COMMA);
+			vars.push(variable(this.currentToken));
+			this.eat(TT.ID);
+		}
 
-	assignmentStatement() {
-    	const left = this.variable();
+		const decls = vars.map(v => varDecl(v, type));
+
+		console.log(decls);
+		return decls;
+	}
+
+	functionDeclaration() {
+		const fnName = this.currentToken.value;
+		this.eat(TT.F_ASSIGN);
+
+		let params: Param[];
+
+		if (this.currentToken.type === TT.LPAREN) {
+			this.eat(TT.LPAREN);
+			params = this.parameterList();
+			this.eat(TT.RPAREN);
+		}
+
+		const blockCompound = this.compound(fnName);
+
+		return functionDeclaration(fnName, params, blockCompound);
+	}
+
+	assignmentStatement(left: Variable, type: Type) {
+		let mut = false;
     	const token = this.currentToken;
 
 		// Switch assignment types;
-    	this.eat(TT.I_ASSIGN);
+		if (this.currentToken.type === TT.I_ASSIGN) {
+			this.eat(TT.I_ASSIGN);
+		}
+		if (this.currentToken.type === TT.M_ASSIGN) {
+			this.eat(TT.M_ASSIGN);
+			mut = true;
+		}
 
-    	const right = this.expr();
+		const right = this.expr();
 
-    	const node = assign(left, token, right);
+		return assign(left, token, right);
+	}
 
-    	return node;
+	parameterList() {
+		const paramList = [this.parameter()];
+
+		while (this.currentToken.type === TT.COMMA) {
+			this.eat(TT.COMMA);
+			paramList.push(this.parameter());
+		}
+
+		return paramList;
+	}
+
+	parameter() {
+		// see and eat type: int param, float param2
+		const typeNode = this.typeSpec();
+
+		const variable = new Variable(this.currentToken);
+		this.eat(TT.ID);
+
+		return new Param(variable, typeNode);
+	}
+
+
+	typeSpec() {
+		const token = this.currentToken;
+		// TODO: this is the place to check existing custom types
+		const type: TT = [TT.INT, TT.FLOAT, TT.STRING, TT.VOID]
+			.find(t => t === token.type);
+
+		if (type) {
+			this.eat(type);
+    		return typeNode(token, token.type);
+		}
+
+		return null;
 	}
 
 	variable() {
